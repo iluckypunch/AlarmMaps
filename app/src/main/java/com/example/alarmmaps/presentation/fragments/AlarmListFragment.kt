@@ -1,4 +1,4 @@
-package com.example.alarmmaps.presentation
+package com.example.alarmmaps.presentation.fragments
 
 import android.os.Bundle
 import android.util.Log

@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.commit
 import com.example.alarmmaps.databinding.ActivityMainBinding
+import com.example.alarmmaps.presentation.fragments.AlarmListFragment
 import com.yandex.mapkit.MapKitFactory
 
 class MainActivity : AppCompatActivity() {
