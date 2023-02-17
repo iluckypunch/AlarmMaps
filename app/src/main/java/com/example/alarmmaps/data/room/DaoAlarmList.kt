@@ -10,6 +10,9 @@ interface DaoAlarmList {
     @Query("SELECT * FROM AlarmTable")
     fun getAlarmList(): LiveData<List<Alarm>>
 
+    @Query("SELECT * FROM AlarmTable WHERE id = :alarmID")
+    fun getAlarm(alarmID: Int): Alarm
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAlarm(alarm: Alarm)
 
