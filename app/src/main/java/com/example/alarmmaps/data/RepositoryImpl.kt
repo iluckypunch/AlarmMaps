@@ -1,13 +1,16 @@
 package com.example.alarmmaps.data
 
 import androidx.lifecycle.LiveData
+import com.example.alarmmaps.data.room.DaoAlarmList
 import com.example.alarmmaps.data.room.RepositoryAlarmList
 import com.example.alarmmaps.domain.entity.Alarm
 import com.example.alarmmaps.domain.repository.Repository
 
-class RepositoryImpl(private val repositoryAlarmList: RepositoryAlarmList) : Repository {
+class RepositoryImpl(daoAlarmList: DaoAlarmList) : Repository {
 
-    private var autoIncrementID = 0
+
+    private val repositoryAlarmList = RepositoryAlarmList(daoAlarmList)
+
     override suspend fun setAlarm(alarm: Alarm) {
         repositoryAlarmList.insert(alarm)
     }

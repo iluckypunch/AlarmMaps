@@ -6,9 +6,19 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.alarmmaps.databinding.AlarmListFragmentBinding
+import com.example.alarmmaps.presentation.MainViewModel
+import com.example.alarmmaps.presentation.recyclerview.AlarmListAdapter
 
 class AlarmListFragment: Fragment() {
+
+    val viewModel: MainViewModel by lazy {
+        ViewModelProvider(this)[MainViewModel::class.java]
+    }
+
+    private lateinit var alarmListAdapter: AlarmListAdapter
 
     private var _binding: AlarmListFragmentBinding? = null
     private val binding: AlarmListFragmentBinding
@@ -21,8 +31,24 @@ class AlarmListFragment: Fragment() {
     ): View {
         Log.d("AlarmListFragment", "OnCreateView")
         _binding = AlarmListFragmentBinding.inflate(inflater, container, false)
+        viewModel.setAlarmList()
+        setupRecyclerView()
         return binding.root
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        viewModel.alarmList.observe(requireActivity()){
+            alarmListAdapter.setAlarmList(it)
+        }
+    }
 
+    private fun setupRecyclerView() {
+        val alarmList = binding.rvAlarmList
+        with(alarmList) {
+                alarmListAdapter = AlarmListAdapter()
+                adapter = alarmListAdapter
+                layoutManager = LinearLayoutManager(requireActivity())
+        }
+    }
 }
