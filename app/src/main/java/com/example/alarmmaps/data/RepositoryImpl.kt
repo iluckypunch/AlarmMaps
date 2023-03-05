@@ -27,7 +27,7 @@ class RepositoryImpl(daoAlarmList: DaoAlarmList) : Repository {
         repositoryAlarmList.insert(alarm)
     }
 
-    override fun getAlarm(alarmID: Int): Alarm {
+    override suspend fun getAlarm(alarmID: Int): Alarm {
         return repositoryAlarmList.getAlarm(alarmID)
     }
 }

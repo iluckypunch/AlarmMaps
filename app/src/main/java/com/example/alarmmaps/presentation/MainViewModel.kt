@@ -8,7 +8,7 @@ import com.example.alarmmaps.data.RepositoryImpl
 import com.example.alarmmaps.data.room.DatabaseAlarmList
 import com.example.alarmmaps.domain.entity.Alarm
 import com.example.alarmmaps.domain.usecases.*
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 
 class MainViewModel(application: Application): AndroidViewModel(application) {
 
@@ -44,7 +44,7 @@ class MainViewModel(application: Application): AndroidViewModel(application) {
         editAlarmUseCase.editAlarm(alarm)
     }
 
-    fun getAlarm(alarmID: Int) = viewModelScope.launch {
+    fun getAlarm(alarmID: Int): Alarm = runBlocking {
         getAlarmUseCase.getAlarm(alarmID)
     }
 }

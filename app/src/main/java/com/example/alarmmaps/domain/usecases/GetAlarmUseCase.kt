@@ -5,7 +5,7 @@ import com.example.alarmmaps.domain.repository.Repository
 
 class GetAlarmUseCase(private val repository: Repository) {
 
-    fun getAlarm(alarmID: Int): Alarm {
+    suspend fun getAlarm(alarmID: Int): Alarm {
         return repository.getAlarm(alarmID)
     }
 }

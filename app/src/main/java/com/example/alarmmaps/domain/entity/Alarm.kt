@@ -9,10 +9,10 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 @Entity(tableName = "AlarmTable")
 data class Alarm(
-    @PrimaryKey(autoGenerate = true) val id: Int,
     val name: String,
     val longitude: Float,
     val latitude: Float,
     val radius: Float,
-    val enable: Boolean
+    val enable: Boolean,
+    @PrimaryKey(autoGenerate = true) var id: Int? = null
 ): Parcelable

@@ -7,7 +7,7 @@ class RepositoryAlarmList(private val daoAlarmList: DaoAlarmList) {
 
     val alarmList: LiveData<List<Alarm>> = daoAlarmList.getAlarmList()
 
-    fun getAlarm(alarmID: Int): Alarm {
+    suspend fun getAlarm(alarmID: Int): Alarm {
         return daoAlarmList.getAlarm(alarmID)
     }
     suspend fun insert(alarm: Alarm) {
