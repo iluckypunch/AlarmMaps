@@ -8,7 +8,7 @@ import com.example.alarmmaps.domain.entity.Alarm
 
 class AlarmListAdapter: RecyclerView.Adapter<AlarmListViewHolder>() {
 
-    private var alarmList = emptyList<Alarm>()
+    var alarmList = emptyList<Alarm>()
 
     internal fun setAlarmList(alarmList: List<Alarm>) {
         this.alarmList = alarmList
