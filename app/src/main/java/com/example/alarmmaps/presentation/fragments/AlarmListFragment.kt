@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.alarmmaps.databinding.AlarmListFragmentBinding
+import com.example.alarmmaps.presentation.MainActivity
 import com.example.alarmmaps.presentation.MainViewModel
 import com.example.alarmmaps.presentation.recyclerview.AlarmListAdapter
 
@@ -35,6 +36,11 @@ class AlarmListFragment: Fragment() {
         _binding = AlarmListFragmentBinding.inflate(inflater, container, false)
         viewModel.setAlarmList()
         setupRecyclerView()
+        val addButton = binding.addButton
+        addButton.setOnClickListener {
+            val alarmMapFragment = AlarmMapFragment()
+            (activity as MainActivity).launchFragment(alarmMapFragment)
+        }
         return binding.root
     }
 
