@@ -62,6 +62,7 @@ class AlarmMapFragment : Fragment(), UserLocationObjectListener, CameraListener,
         _binding = AlarmMapFragmentBinding.inflate(inflater, container, false)
         MapKitFactory.initialize(this.context)
         mapView = binding.mapview
+        binding.takePlaceButton.hide()
         return binding.root
     }
 
@@ -161,11 +162,17 @@ class AlarmMapFragment : Fragment(), UserLocationObjectListener, CameraListener,
         if (finish) {
             if (followUserLocation) {
                 setAnchor()
+                binding.takePlaceButton.show()
+                binding.userLocationFab.show()
             } else {
                 noAnchor()
+                binding.takePlaceButton.show()
+                binding.userLocationFab.show()
             }
         } else {
             noAnchor()
+            binding.takePlaceButton.hide()
+            binding.userLocationFab.hide()
         }
     }
 
