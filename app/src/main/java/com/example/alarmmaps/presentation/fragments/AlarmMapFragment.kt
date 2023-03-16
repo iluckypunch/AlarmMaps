@@ -13,27 +13,30 @@ import android.view.ViewGroup
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat.checkSelfPermission
+import androidx.core.content.ContextCompat.getDrawable
 import androidx.fragment.app.Fragment
 import com.example.alarmmaps.R
 import com.example.alarmmaps.databinding.AlarmMapFragmentBinding
 import com.yandex.mapkit.Animation
 import com.yandex.mapkit.MapKitFactory
 import com.yandex.mapkit.geometry.Point
+import com.yandex.mapkit.layers.GeoObjectTapEvent
+import com.yandex.mapkit.layers.GeoObjectTapListener
 import com.yandex.mapkit.layers.ObjectEvent
 import com.yandex.mapkit.logo.Alignment
 import com.yandex.mapkit.logo.HorizontalAlignment
 import com.yandex.mapkit.logo.VerticalAlignment
-import com.yandex.mapkit.map.CameraListener
-import com.yandex.mapkit.map.CameraPosition
-import com.yandex.mapkit.map.CameraUpdateReason
+import com.yandex.mapkit.map.*
 import com.yandex.mapkit.map.Map
 import com.yandex.mapkit.mapview.MapView
 import com.yandex.mapkit.user_location.UserLocationLayer
 import com.yandex.mapkit.user_location.UserLocationObjectListener
 import com.yandex.mapkit.user_location.UserLocationView
+import com.yandex.runtime.ui_view.ViewProvider
 
 
-class AlarmMapFragment : Fragment(), UserLocationObjectListener, CameraListener {
+class AlarmMapFragment : Fragment(), UserLocationObjectListener, CameraListener,
+    GeoObjectTapListener, InputListener {
 
     private var _binding: AlarmMapFragmentBinding? = null
     private val binding: AlarmMapFragmentBinding
@@ -86,7 +89,6 @@ class AlarmMapFragment : Fragment(), UserLocationObjectListener, CameraListener 
         binding.userLocationFab.setOnClickListener {
             if (permissionLocation) {
                 cameraUserPosition()
-
                 followUserLocation = true
             } else {
                 checkPermission()
@@ -102,6 +104,10 @@ class AlarmMapFragment : Fragment(), UserLocationObjectListener, CameraListener 
         userLocationLayer.setObjectListener(this)
 
         cameraUserPosition()
+
+        mapView.map.addTapListener(this)
+        mapView.map.addInputListener(this)
+        mapView.map.addCameraListener(this)
 
         permissionLocation = true
     }
@@ -152,8 +158,12 @@ class AlarmMapFragment : Fragment(), UserLocationObjectListener, CameraListener 
         cameraUpdateReason: CameraUpdateReason,
         finish: Boolean
     ) {
-        if (finish and followUserLocation) {
-            setAnchor()
+        if (finish) {
+            if (followUserLocation) {
+                setAnchor()
+            } else {
+                noAnchor()
+            }
         } else {
             noAnchor()
         }
@@ -180,5 +190,39 @@ class AlarmMapFragment : Fragment(), UserLocationObjectListener, CameraListener 
         binding.userLocationFab.setImageResource(R.drawable.ic_location_searching_black_24dp)
     }
 
+    override fun onObjectTap(geoObjectTapEvent: GeoObjectTapEvent): Boolean {
+        val selectionMetadata = geoObjectTapEvent
+            .geoObject
+            .metadataContainer
+            .getItem(GeoObjectSelectionMetadata::class.java)
 
+        if (selectionMetadata != null) {
+            mapView.map.selectGeoObject(selectionMetadata.id, selectionMetadata.layerId)
+            Log.d("AlarmMapFragment","${geoObjectTapEvent.geoObject.boundingBox?.northEast?.longitude}, ${geoObjectTapEvent.geoObject.boundingBox?.northEast?.latitude}")
+        }
+
+        return selectionMetadata != null
+    }
+
+    override fun onMapTap(p0: Map, p1: Point) {
+        mapView.map.mapObjects.clear()
+        mapView.map.deselectGeoObject()
+    }
+
+    override fun onMapLongTap(map: Map, point: Point) {
+        val view = View(requireContext()).apply {
+            background = getDrawable(requireContext(),R.drawable.ic_baseline_location_on_24)
+        }
+        mapView.map.mapObjects.clear()
+        mapView.map.mapObjects.addPlacemark(point, ViewProvider(view))
+        mapView.map.move(CameraPosition(point, 16f, 0f, 0f),
+        Animation(Animation.Type.SMOOTH, 1f),
+        null)
+        Log.d("AlarmMapFragment", "${point.latitude}, ${point.longitude}")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        _binding = null
+    }
 }

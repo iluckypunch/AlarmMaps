@@ -33,6 +33,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        _binding = null
+    }
+
     companion object {
         const val MAPKIT_API_KEY = "10b4723f-3f09-4f4a-a0b0-c97a82626849"
 
