@@ -4,6 +4,7 @@ package com.example.alarmmaps.presentation.fragments
 import android.Manifest.permission.ACCESS_COARSE_LOCATION
 import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.content.pm.PackageManager.PERMISSION_GRANTED
+import android.graphics.Color
 import android.graphics.PointF
 import android.os.Bundle
 import android.util.Log
@@ -19,6 +20,7 @@ import com.example.alarmmaps.R
 import com.example.alarmmaps.databinding.AlarmMapFragmentBinding
 import com.yandex.mapkit.Animation
 import com.yandex.mapkit.MapKitFactory
+import com.yandex.mapkit.geometry.Circle
 import com.yandex.mapkit.geometry.Point
 import com.yandex.mapkit.layers.GeoObjectTapEvent
 import com.yandex.mapkit.layers.GeoObjectTapListener
@@ -52,6 +54,7 @@ class AlarmMapFragment : Fragment(), UserLocationObjectListener, CameraListener,
 
     private var permissionLocation = false
     private var followUserLocation = false
+    private var mapObjectIsSelected = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -95,6 +98,12 @@ class AlarmMapFragment : Fragment(), UserLocationObjectListener, CameraListener,
                 checkPermission()
             }
         }
+
+        binding.takePlaceButton.setOnClickListener {
+            val point = mapView.map.cameraPosition.target
+            mapView.map.mapObjects.addCircle(Circle(point, 100f), Color.CYAN, 2f, Color.TRANSPARENT)
+
+        }
     }
 
     private fun onMapReady() {
@@ -122,7 +131,7 @@ class AlarmMapFragment : Fragment(), UserLocationObjectListener, CameraListener,
                 null
             )
         } else {
-            mapView.map.move(CameraPosition(routeStartLocation, 16f, 0f, 0f))
+            mapView.map.move(CameraPosition(routeStartLocation, 1f, 0f, 0f))
         }
     }
 
@@ -168,11 +177,19 @@ class AlarmMapFragment : Fragment(), UserLocationObjectListener, CameraListener,
                 noAnchor()
                 binding.takePlaceButton.show()
                 binding.userLocationFab.show()
+                if (binding.mapPin.visibility == View.INVISIBLE) {
+                    mapObjectIsSelected = true
+                }
             }
         } else {
             noAnchor()
             binding.takePlaceButton.hide()
             binding.userLocationFab.hide()
+            if (mapObjectIsSelected) {
+                binding.mapPin.visibility = View.VISIBLE
+                mapObjectIsSelected = false
+                mapView.map.deselectGeoObject()
+            }
         }
     }
 
@@ -203,17 +220,25 @@ class AlarmMapFragment : Fragment(), UserLocationObjectListener, CameraListener,
             .metadataContainer
             .getItem(GeoObjectSelectionMetadata::class.java)
 
+        val pointOfSelectionMetadata = geoObjectTapEvent.geoObject.geometry.get(0).point
+
+
         if (selectionMetadata != null) {
             mapView.map.selectGeoObject(selectionMetadata.id, selectionMetadata.layerId)
-            Log.d("AlarmMapFragment","${geoObjectTapEvent.geoObject.boundingBox?.northEast?.longitude}, ${geoObjectTapEvent.geoObject.boundingBox?.northEast?.latitude}")
+            mapView.map.move(CameraPosition(pointOfSelectionMetadata!!, mapView.map.cameraPosition.zoom, 0f, 0f),
+                Animation(Animation.Type.SMOOTH, 1f),
+                null)
+            binding.mapPin.visibility = View.INVISIBLE
         }
 
         return selectionMetadata != null
     }
 
-    override fun onMapTap(p0: Map, p1: Point) {
+    override fun onMapTap(map: Map, point: Point) {
         mapView.map.mapObjects.clear()
         mapView.map.deselectGeoObject()
+        binding.mapPin.visibility = View.VISIBLE
+        mapObjectIsSelected = false
     }
 
     override fun onMapLongTap(map: Map, point: Point) {
@@ -225,6 +250,8 @@ class AlarmMapFragment : Fragment(), UserLocationObjectListener, CameraListener,
         mapView.map.move(CameraPosition(point, 16f, 0f, 0f),
         Animation(Animation.Type.SMOOTH, 1f),
         null)
+        binding.mapPin.visibility = View.VISIBLE
+        mapObjectIsSelected = false
         Log.d("AlarmMapFragment", "${point.latitude}, ${point.longitude}")
     }
 
