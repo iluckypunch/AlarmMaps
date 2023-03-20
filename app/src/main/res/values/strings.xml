@@ -5,4 +5,8 @@
     <string name="take_place_button_text">TAKE THIS PLACE</string>
     <string name="route_to_user_location">Route to user location</string>
     <string name="pin_image_for_map">Pin image for map</string>
+    <string name="et_name">Name</string>
+    <string name="et_radius">Radius</string>
+    <string name="cancel">Cancel</string>
+    <string name="new_alarm">NEW ALARM</string>
 </resources>

@@ -4,7 +4,6 @@ package com.example.alarmmaps.presentation.fragments
 import android.Manifest.permission.ACCESS_COARSE_LOCATION
 import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.content.pm.PackageManager.PERMISSION_GRANTED
-import android.graphics.Color
 import android.graphics.PointF
 import android.os.Bundle
 import android.util.Log
@@ -20,7 +19,6 @@ import com.example.alarmmaps.R
 import com.example.alarmmaps.databinding.AlarmMapFragmentBinding
 import com.yandex.mapkit.Animation
 import com.yandex.mapkit.MapKitFactory
-import com.yandex.mapkit.geometry.Circle
 import com.yandex.mapkit.geometry.Point
 import com.yandex.mapkit.layers.GeoObjectTapEvent
 import com.yandex.mapkit.layers.GeoObjectTapListener
@@ -49,6 +47,8 @@ class AlarmMapFragment : Fragment(), UserLocationObjectListener, CameraListener,
     private lateinit var checkLocationPermission: ActivityResultLauncher<Array<String>>
 
     private lateinit var userLocationLayer: UserLocationLayer
+
+    lateinit var name: String
 
     private var routeStartLocation = Point(0.0, 0.0)
 
@@ -101,8 +101,15 @@ class AlarmMapFragment : Fragment(), UserLocationObjectListener, CameraListener,
 
         binding.takePlaceButton.setOnClickListener {
             val point = mapView.map.cameraPosition.target
-            mapView.map.mapObjects.addCircle(Circle(point, 100f), Color.CYAN, 2f, Color.TRANSPARENT)
-
+            val dialog = SetAlarmDialog()
+            val args = Bundle()
+            args.putFloat("latitude", point.latitude.toFloat())
+            args.putFloat("longitude", point.longitude.toFloat())
+            if (mapObjectIsSelected) {
+                args.putString("name", name)
+            }
+            dialog.arguments = args
+            dialog.show(childFragmentManager, null)
         }
     }
 
@@ -222,13 +229,13 @@ class AlarmMapFragment : Fragment(), UserLocationObjectListener, CameraListener,
 
         val pointOfSelectionMetadata = geoObjectTapEvent.geoObject.geometry.get(0).point
 
-
         if (selectionMetadata != null) {
             mapView.map.selectGeoObject(selectionMetadata.id, selectionMetadata.layerId)
             mapView.map.move(CameraPosition(pointOfSelectionMetadata!!, mapView.map.cameraPosition.zoom, 0f, 0f),
                 Animation(Animation.Type.SMOOTH, 1f),
                 null)
             binding.mapPin.visibility = View.INVISIBLE
+            name = geoObjectTapEvent.geoObject.name.toString()
         }
 
         return selectionMetadata != null
