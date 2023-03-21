@@ -47,5 +47,11 @@ class MainViewModel(application: Application): AndroidViewModel(application) {
     fun getAlarm(alarmID: Int): Alarm = runBlocking {
         getAlarmUseCase.getAlarm(alarmID)
     }
+
+    fun changeEnableState(alarm: Alarm) {
+        alarm.copy(enable = !alarm.enable).also {
+            editAlarm(it)
+        }
+    }
 }
 

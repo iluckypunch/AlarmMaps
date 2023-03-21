@@ -58,6 +58,7 @@ class AlarmListFragment: Fragment() {
                 adapter = alarmListAdapter
                 layoutManager = LinearLayoutManager(requireActivity())
         }
+        setupLongClickListener()
         setupSwipeListener(alarmList)
     }
 
@@ -82,6 +83,12 @@ class AlarmListFragment: Fragment() {
 
         val itemTouchHelper = ItemTouchHelper(callback)
         itemTouchHelper.attachToRecyclerView(rvAlarmList)
+    }
+
+    private fun setupLongClickListener() {
+        alarmListAdapter.onAlarmLongClickListener = {
+            viewModel.changeEnableState(it)
+        }
     }
 
     override fun onDestroy() {

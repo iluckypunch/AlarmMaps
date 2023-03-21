@@ -10,6 +10,8 @@ class AlarmListAdapter: RecyclerView.Adapter<AlarmListViewHolder>() {
 
     var alarmList = emptyList<Alarm>()
 
+    var onAlarmLongClickListener: ((Alarm) -> Unit)? = null
+
     internal fun setAlarmList(alarmList: List<Alarm>) {
         this.alarmList = alarmList
         notifyDataSetChanged()
@@ -33,7 +35,10 @@ class AlarmListAdapter: RecyclerView.Adapter<AlarmListViewHolder>() {
         val alarm = alarmList[position]
         holder.tvName.text = alarm.name
         holder.tvRadius.text = alarm.radius.toString()
-
+        holder.view.setOnLongClickListener {
+            onAlarmLongClickListener?.invoke(alarm)
+            true
+        }
     }
 
     override fun getItemViewType(position: Int): Int {
