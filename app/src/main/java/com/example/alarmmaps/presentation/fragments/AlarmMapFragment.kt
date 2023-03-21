@@ -123,6 +123,7 @@ class AlarmMapFragment : Fragment(), UserLocationObjectListener, CameraListener,
             if (mapObjectIsSelected) {
                 args.putString("name", name)
             }
+            args.putInt("alarm_id", editableAlarm.id!!.toInt())
             dialog.arguments = args
             dialog.show(childFragmentManager, null)
         }

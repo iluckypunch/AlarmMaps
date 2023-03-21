@@ -9,6 +9,7 @@ import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModelProvider
 import com.example.alarmmaps.R
 import com.example.alarmmaps.domain.entity.Alarm
+import com.example.alarmmaps.presentation.MainActivity
 import com.example.alarmmaps.presentation.MainViewModel
 
 class SetAlarmDialog : DialogFragment() {
@@ -26,6 +27,7 @@ class SetAlarmDialog : DialogFragment() {
         val name = arguments?.getString("name")
         val latitude = arguments?.getFloat("latitude")
         val longitude = arguments?.getFloat("longitude")
+        val alarmID = arguments?.getInt("alarm_id")
 
         return activity?.let {
             val builder = AlertDialog.Builder(it)
@@ -45,15 +47,29 @@ class SetAlarmDialog : DialogFragment() {
 
                 .setPositiveButton(R.string.set_new_alarm
                 ) { dialog, id ->
-                    viewModel.setAlarm(
-                        Alarm(
-                            etName.text.toString(),
-                            longitude!!,
-                            latitude!!,
-                            etRadius.text.toString().toFloat(),
-                            true
+                    if (alarmID != null) {
+                        viewModel.editAlarm(
+                            Alarm(
+                                etName.text.toString(),
+                                longitude!!,
+                                latitude!!,
+                                etRadius.text.toString().toFloat(),
+                                true,
+                                alarmID
+                            )
                         )
-                    )
+                    } else {
+                        viewModel.setAlarm(
+                            Alarm(
+                                etName.text.toString(),
+                                longitude!!,
+                                latitude!!,
+                                etRadius.text.toString().toFloat(),
+                                true
+                            )
+                        )
+                    }
+                    (activity as MainActivity).supportFragmentManager.popBackStack("List", 0)
                 }
                 .setNegativeButton(R.string.cancel
                 ) { dialog, id ->

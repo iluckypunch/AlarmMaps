@@ -21,6 +21,7 @@ class MainActivity : AppCompatActivity() {
         if (savedInstanceState == null) {
             val alarmListFragment = AlarmListFragment()
             supportFragmentManager.commit {
+                addToBackStack("List")
                 add(binding.fragmentContainerView.id, alarmListFragment)
             }
         }
