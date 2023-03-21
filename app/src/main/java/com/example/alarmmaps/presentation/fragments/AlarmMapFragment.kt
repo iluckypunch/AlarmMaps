@@ -4,6 +4,7 @@ package com.example.alarmmaps.presentation.fragments
 import android.Manifest.permission.ACCESS_COARSE_LOCATION
 import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.content.pm.PackageManager.PERMISSION_GRANTED
+import android.graphics.Color
 import android.graphics.PointF
 import android.os.Bundle
 import android.util.Log
@@ -15,10 +16,13 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat.checkSelfPermission
 import androidx.core.content.ContextCompat.getDrawable
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import com.example.alarmmaps.R
 import com.example.alarmmaps.databinding.AlarmMapFragmentBinding
+import com.example.alarmmaps.presentation.MainViewModel
 import com.yandex.mapkit.Animation
 import com.yandex.mapkit.MapKitFactory
+import com.yandex.mapkit.geometry.Circle
 import com.yandex.mapkit.geometry.Point
 import com.yandex.mapkit.layers.GeoObjectTapEvent
 import com.yandex.mapkit.layers.GeoObjectTapListener
@@ -41,6 +45,10 @@ class AlarmMapFragment : Fragment(), UserLocationObjectListener, CameraListener,
     private var _binding: AlarmMapFragmentBinding? = null
     private val binding: AlarmMapFragmentBinding
         get() = _binding ?: throw Exception("AlarmMapFragmentBinding = null")
+
+    private val viewModel: MainViewModel by lazy {
+        ViewModelProvider(this)[MainViewModel::class.java]
+    }
 
     private lateinit var mapView: MapView
 
@@ -82,8 +90,42 @@ class AlarmMapFragment : Fragment(), UserLocationObjectListener, CameraListener,
         }
 
         checkPermission()
-
         userInterface()
+        launchScreenMode()
+    }
+
+    private fun launchScreenMode() {
+        when (arguments?.getString(SCREEN_MODE)) {
+            EDIT_MODE -> launchEditMode()
+            ADD_MODE -> launchAddMode()
+        }
+    }
+
+    private fun launchEditMode() {
+        val editableAlarm = arguments?.getInt(ALARM_ID)?.let { viewModel.getAlarm(it) }
+        val oldPoint = Point(editableAlarm!!.latitude.toDouble(), editableAlarm.longitude.toDouble())
+        mapView.map.mapObjects.addCircle(
+            Circle(
+                oldPoint,
+                editableAlarm.radius
+            ),
+            Color.DKGRAY,
+            2f,
+            Color.GRAY)
+        mapView.map.move(CameraPosition(oldPoint, 16f, 0f, 0f),
+        Animation(Animation.Type.SMOOTH, 1f), null)
+        binding.takePlaceButton.setOnClickListener {
+            val point = mapView.map.cameraPosition.target
+            val dialog = SetAlarmDialog()
+            val args = Bundle()
+            args.putFloat("latitude", point.latitude.toFloat())
+            args.putFloat("longitude", point.longitude.toFloat())
+            if (mapObjectIsSelected) {
+                args.putString("name", name)
+            }
+            dialog.arguments = args
+            dialog.show(childFragmentManager, null)
+        }
     }
 
     private fun userInterface() {
@@ -99,6 +141,10 @@ class AlarmMapFragment : Fragment(), UserLocationObjectListener, CameraListener,
             }
         }
 
+
+    }
+
+    private fun launchAddMode() {
         binding.takePlaceButton.setOnClickListener {
             val point = mapView.map.cameraPosition.target
             val dialog = SetAlarmDialog()
@@ -265,5 +311,30 @@ class AlarmMapFragment : Fragment(), UserLocationObjectListener, CameraListener,
     override fun onDestroy() {
         super.onDestroy()
         _binding = null
+    }
+
+    companion object {
+        private const val SCREEN_MODE = "extra_mode"
+        private const val ALARM_ID = "extra_alarm_id"
+        private const val ADD_MODE = "add_mode"
+        private const val EDIT_MODE = "edit_mode"
+
+        fun newInstanceAddAlarm(): AlarmMapFragment {
+            return AlarmMapFragment().apply {
+                arguments = Bundle().apply {
+                    putString(SCREEN_MODE, ADD_MODE)
+                }
+            }
+        }
+
+
+        fun newInstanceEditAlarm(alarmID: Int): AlarmMapFragment {
+            return AlarmMapFragment().apply {
+                arguments = Bundle().apply {
+                    putString(SCREEN_MODE, EDIT_MODE)
+                    putInt(ALARM_ID, alarmID)
+                }
+            }
+        }
     }
 }

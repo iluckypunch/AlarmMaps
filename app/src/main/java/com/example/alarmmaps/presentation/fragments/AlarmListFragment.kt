@@ -38,8 +38,7 @@ class AlarmListFragment: Fragment() {
         setupRecyclerView()
         val addButton = binding.addButton
         addButton.setOnClickListener {
-            val alarmMapFragment = AlarmMapFragment()
-            (activity as MainActivity).launchFragment(alarmMapFragment)
+            (activity as MainActivity).launchFragment(AlarmMapFragment.newInstanceAddAlarm())
         }
         return binding.root
     }
@@ -58,6 +57,7 @@ class AlarmListFragment: Fragment() {
                 adapter = alarmListAdapter
                 layoutManager = LinearLayoutManager(requireActivity())
         }
+        setupClickListener()
         setupLongClickListener()
         setupSwipeListener(alarmList)
     }
@@ -83,6 +83,12 @@ class AlarmListFragment: Fragment() {
 
         val itemTouchHelper = ItemTouchHelper(callback)
         itemTouchHelper.attachToRecyclerView(rvAlarmList)
+    }
+
+    private fun setupClickListener() {
+        alarmListAdapter.onAlarmClickListener = {
+            (activity as MainActivity).launchFragment(AlarmMapFragment.newInstanceEditAlarm(it.id!!.toInt()))
+        }
     }
 
     private fun setupLongClickListener() {
