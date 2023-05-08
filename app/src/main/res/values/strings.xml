@@ -9,4 +9,7 @@
     <string name="et_radius">Radius</string>
     <string name="cancel">Cancel</string>
     <string name="new_alarm">NEW ALARM</string>
+    <string name="background_location_permission_title">Allow to access this device\'s location?</string>
+    <string name="background_location_permission_message">For the correct app work it is necessary to allow getting location access  all the time in the settings</string>
+    <string name="settings">SETTINGS</string>
 </resources>

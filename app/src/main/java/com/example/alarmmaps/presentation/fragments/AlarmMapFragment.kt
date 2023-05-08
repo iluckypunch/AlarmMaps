@@ -1,11 +1,13 @@
 package com.example.alarmmaps.presentation.fragments
 
 
+import android.Manifest.permission.ACCESS_BACKGROUND_LOCATION
 import android.Manifest.permission.ACCESS_COARSE_LOCATION
 import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.graphics.Color
 import android.graphics.PointF
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -13,6 +15,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat.checkSelfPermission
 import androidx.core.content.ContextCompat.getDrawable
 import androidx.fragment.app.Fragment
@@ -81,13 +85,7 @@ class AlarmMapFragment : Fragment(), UserLocationObjectListener, CameraListener,
         super.onViewCreated(view, savedInstanceState)
         checkLocationPermission = registerForActivityResult(
             ActivityResultContracts.RequestMultiplePermissions()
-        ) { permissions ->
-            if (permissions[ACCESS_FINE_LOCATION] == true ||
-                permissions[ACCESS_COARSE_LOCATION] == true
-            ) {
-                onMapReady()
-            }
-        }
+        ) {}
 
         checkPermission()
         userInterface()
@@ -189,13 +187,59 @@ class AlarmMapFragment : Fragment(), UserLocationObjectListener, CameraListener,
         }
     }
 
-    private fun checkPermission() {
+    private fun checkLocationPermissionAPI28() {
         if (checkSelfPermission(requireContext(), ACCESS_FINE_LOCATION) == PERMISSION_GRANTED ||
             checkSelfPermission(requireContext(), ACCESS_COARSE_LOCATION) == PERMISSION_GRANTED
         ) {
             onMapReady()
         } else {
             checkLocationPermission.launch(arrayOf(ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION))
+        }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.Q)
+    private fun checkLocationPermissionAPI29() {
+        if (checkSelfPermission(requireContext(), ACCESS_FINE_LOCATION) == PERMISSION_GRANTED &&
+            checkSelfPermission(requireContext(), ACCESS_COARSE_LOCATION) == PERMISSION_GRANTED &&
+            checkSelfPermission(requireContext(), ACCESS_BACKGROUND_LOCATION) == PERMISSION_GRANTED
+        ) {
+            onMapReady()
+        } else {
+            checkLocationPermission.launch(arrayOf(ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION, ACCESS_BACKGROUND_LOCATION))
+        }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.R)
+    private fun checkBackgroundLocationPermissionAPI30() {
+        if (checkSelfPermission(requireContext(), ACCESS_BACKGROUND_LOCATION) == PERMISSION_GRANTED) {
+            onMapReady()
+        } else {
+            checkLocationPermission.launch(arrayOf(ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION))
+            AlertDialog.Builder(requireActivity())
+                .setTitle(R.string.background_location_permission_title)
+                .setMessage(R.string.background_location_permission_message)
+                .setPositiveButton(R.string.settings) { _,_ ->
+                    // this request will take user to xApplication's Setting page
+                    checkLocationPermission.launch(arrayOf(ACCESS_BACKGROUND_LOCATION))
+                }
+                .setNegativeButton(R.string.cancel) { dialog,_ ->
+                    dialog.dismiss()
+                }
+                .create()
+                .show()
+        }
+    }
+
+
+    private fun checkPermission() {
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
+            checkLocationPermissionAPI28()
+        }
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q) {
+            checkLocationPermissionAPI29()
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            checkBackgroundLocationPermissionAPI30()
         }
     }
 
@@ -274,7 +318,7 @@ class AlarmMapFragment : Fragment(), UserLocationObjectListener, CameraListener,
             .metadataContainer
             .getItem(GeoObjectSelectionMetadata::class.java)
 
-        val pointOfSelectionMetadata = geoObjectTapEvent.geoObject.geometry.get(0).point
+        val pointOfSelectionMetadata = geoObjectTapEvent.geoObject.geometry[0].point
 
         if (selectionMetadata != null) {
             mapView.map.selectGeoObject(selectionMetadata.id, selectionMetadata.layerId)
